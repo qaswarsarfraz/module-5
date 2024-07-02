@@ -10,6 +10,7 @@
             font-family: Arial, sans-serif;
             background: url('background.jpg') no-repeat center center fixed;
             background-size: cover;
+            color: #333;
         }
         .tiles {
             display: flex;
@@ -22,10 +23,11 @@
             text-align: center;
             width: 150px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.3s ease;
         }
         .tile:hover {
             background-color: pink;
+            transform: scale(1.1);
         }
         #menu-items {
             margin-top: 50px;
@@ -37,101 +39,206 @@
         }
         #menu-items li {
             margin: 10px 0;
+            color: blue;
         }
         .logo {
             display: block;
             margin: 20px auto;
             width: 150px;
+            height: 150px;
+            border-radius: 50%;
             cursor: pointer;
         }
         #images {
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
             margin-top: 50px;
         }
-        #images img {
-            margin: 0 10px;
-            width: 200px;
-            height: auto;
-        }
-        .sidebar {
-            position: fixed;
-            top: 20%;
-            right: 20px;
-            width: 200px;
-            border: 2px solid pink;
-            background-color: white;
-            padding: 10px;
+        #images .dish {
+            position: relative;
+            margin: 10px;
             text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            width: calc(33% - 20px);
         }
-        .sidebar a {
+        #images .dish img {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+        }
+        #images .dish p {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 2px solid pink;
+            padding: 10px;
+            margin: 0;
+            transition: background-color 0.3s ease;
+            border-radius: 15px;
+        }
+        #images .dish p:hover {
+            background-color: pink;
+        }
+        #map {
+            display: block;
+            margin: 30px auto 0;
+            border-radius: 15px;
+            max-width: 100%;
+        }
+        .footer {
+            text-align: center;
+            font-size: larger;
+            color: white;
+            font-weight: bold;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+        }
+        .footer a {
+            color: #fff;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+        .footer a:hover {
+            color: pink;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: pink;
+            padding: 20px;
+            border: 2px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+        .modal.active {
+            display: block;
+        }
+        .modal input {
+            width: 50px;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 500;
+        }
+        .overlay.active {
+            display: block;
+        }
+        .menu {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background-color: white;
+            border: 2px solid pink;
+            padding: 10px;
+            z-index: 100;
+        }
+        .menu.active {
+            display: block;
+        }
+        .menu a {
             display: block;
             margin: 10px 0;
             text-decoration: none;
             color: black;
+            transition: background-color 0.3s ease;
         }
-        .sidebar a:hover {
+        .menu a:hover {
             background-color: pink;
         }
     </style>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script>
-        const $dc = {
-            categories: ['Lunch', 'Dinner', 'Sushi', 'Dessert', 'Beverages'],
-            loadMenuItems() {
-                const randomCategory = this.categories[Math.floor(Math.random() * this.categories.length)];
-                console.log(`Loading menu items for category: ${randomCategory}`);
-                setTimeout(() => {
-                    const menuItems = this.getMenuItems(randomCategory);
-                    this.displayMenuItems(menuItems);
-                }, 500);
-            },
-            getMenuItems(category) {
-                const menuItems = {
-                    'Lunch': ['Sandwich', 'Salad', 'Soup'],
-                    'Dinner': ['Steak', 'Pasta', 'Fish'],
-                    'Sushi': ['California Roll', 'Tuna Roll', 'Salmon Sashimi'],
-                    'Dessert': ['Ice Cream', 'Cake', 'Cookies'],
-                    'Beverages': ['Coffee', 'Tea', 'Juice']
-                };
-                return menuItems[category] || [];
-            },
-            displayMenuItems(items) {
-                const menuItemsDiv = document.getElementById('menu-items');
-                menuItemsDiv.innerHTML = '';
-                if (items.length > 0) {
-                    const ul = document.createElement('ul');
-                    items.forEach(item => {
-                        const li = document.createElement('li');
-                        li.textContent = item;
-                        ul.appendChild(li);
-                    });
-                    menuItemsDiv.appendChild(ul);
-                } else {
-                    menuItemsDiv.textContent = 'No items found for this category.';
-                }
-            }
-        };
-
         $(document).ready(function() {
+            const categories = ['Lunch', 'Dinner', 'Sushi', 'Drinks', 'Desserts'];
+            const menuItems = {
+                'Lunch': ['Sandwich', 'Salad', 'Soup'],
+                'Dinner': ['Steak', 'Pasta', 'Seafood'],
+                'Sushi': ['Maki', 'Nigiri', 'Sashimi'],
+                'Drinks': ['Cocktail', 'Juice', 'Soda'],
+                'Desserts': ['Cake', 'Ice Cream', 'Pie']
+            };
+
+            function getRandomCategory() {
+                return categories[Math.floor(Math.random() * categories.length)];
+            }
+
+            function loadMenuItems(category) {
+                const items = menuItems[category];
+                $('#menu-items').empty().append('<ul></ul>');
+                items.forEach(item => {
+                    $('#menu-items ul').append(`<li class="special">${item}</li>`);
+                });
+            }
+
             $('#specials').click(function() {
-                $dc.loadMenuItems();
+                const randomCategory = getRandomCategory();
+                loadMenuItems(randomCategory);
             });
 
             $('#logo').click(function() {
                 $('#menu-items').empty();
             });
 
-            $('#menu-link').click(function() {
-                $('html, body').animate({
-                    scrollTop: $("#images").offset().top
-                }, 1000);
+            $('#menu-button').click(function() {
+                $('.menu').toggleClass('active');
+            });
+
+            $('.menu-item').click(function() {
+                const category = $(this).attr('data-category');
+                loadMenuItems(category);
+                $('.menu').removeClass('active');
+            });
+
+            $('.dish p').click(function() {
+                const dishName = $(this).text().split(' - ')[0];
+                const dishPrice = $(this).text().split(' - ')[1].split(' ')[0].replace('$', '');
+                $('#dish-name').text(dishName);
+                $('#dish-price').text(dishPrice);
+                $('.modal').addClass('active');
+                $('.overlay').addClass('active');
+            });
+
+            $('#order-confirm').click(function() {
+                const dishName = $('#dish-name').text();
+                const dishPrice = parseFloat($('#dish-price').text());
+                const quantity = parseInt($('#quantity').val());
+                if (quantity > 0) {
+                    const total = dishPrice * quantity;
+                    alert(`Order confirmed! ${quantity} x ${dishName} = $${total.toFixed(2)}. Your delivery will arrive in approximately 30 minutes.`);
+                    $('.modal').removeClass('active');
+                    $('.overlay').removeClass('active');
+                } else {
+                    alert('Please enter a valid quantity.');
+                }
+            });
+
+            $('#order-cancel').click(function() {
+                $('.modal').removeClass('active');
+                $('.overlay').removeClass('active');
+            });
+
+            $('.overlay').click(function() {
+                $('.modal').removeClass('active');
+                $('.overlay').removeClass('active');
             });
         });
     </script>
 </head>
 <body>
     <img id="logo" class="logo" src="logo.png" alt="Restaurant Logo">
+    <button id="menu-button" style="position: absolute; top: 20px; right: 20px;">☰ Menu</button>
     <nav class="tiles">
         <div class="tile" id="specials">
             Specials
@@ -141,14 +248,57 @@
         <!-- Menu items will be loaded here -->
     </section>
     <section id="images">
-        <img src="dish1.jpg" alt="Dish 1" class="img-thumbnail">
-        <img src="dish2.jpg" alt="Dish 2" class="img-thumbnail">
-        <img src="dish3.jpg" alt="Dish 3" class="img-thumbnail">
-        <img src="map.jpg" alt="Map" class="img-thumbnail">
+        <div class="dish" id="dish1">
+            <img src="dish1.jpg" alt="Dish 1">
+            <p>Dish 1 - $10.00</p>
+        </div>
+        <div class="dish" id="dish2">
+            <img src="dish2.jpg" alt="Dish 2">
+            <p>Dish 2 - $15.00</p>
+        </div>
+        <div class="dish" id="dish3">
+            <img src="dish3.jpg" alt="Dish 3">
+            <p>Dish 3 - $12.00</p>
+        </div>
+        <div class="dish" id="dish4">
+            <img src="D6.jpg" alt="Dish 4">
+            <p>Dish 4 - $14.00</p>
+        </div>
+        <div class="dish" id="dish5">
+            <img src="D7.jpg" alt="Dish 5">
+            <p>Dish 5 - $16.00</p>
+        </div>
+        <div class="dish" id="dish6">
+            <img src="D7.jpg" alt="Dish 6">
+            <p>Dish 6 - $18.00</p>
+        </div>
+        <img src="map.jpg" alt="Map" id="map" class="img-thumbnail">
     </section>
-    <div class="sidebar">
-        <a href="#" id="menu-link">Menu</a>
-        <!-- Additional sidebar links can be added here -->
+    <div class="footer">
+        <p>Address: 1234 Elm Street, Springfield, USA</p>
+        <p>Email: <a href="mailto:dummyemail@gmail.com">dummyemail@gmail.com</a></p>
+        <p>Follow us: 
+            <a href="https://www.facebook.com" target="_blank"><img src="facebook-logo.png" alt="Facebook" width="20"></a> 
+            <a href="https://www.instagram.com" target="_blank"><img src="instagram-logo.png" alt="Instagram" width="20"></a>
+        </p>
+    </div>
+    <div class="modal">
+        <h3>Order <span id="dish-name"></span></h3>
+        <p>Price: $<span id="dish-price"></span></p>
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" min="1" value="1">
+        <br>
+        <button id="order-confirm" class="btn btn-primary">Confirm Order</button>
+        <button id="order-cancel" class="btn btn-secondary">Cancel</button>
+    </div>
+    <div class="overlay"></div>
+    <div class="menu">
+        <a href="#" class="menu-item" data-category="Lunch">Lunch</a>
+        <a href="#" class="menu-item" data-category="Dinner">Dinner</a>
+        <a href="#" class="menu-item" data-category="Sushi">Sushi</a>
+        <a href="#" class="menu-item" data-category="Drinks">Drinks</a>
+        <a href="#" class="menu-item" data-category="Desserts">Desserts</a>
+        <a href="#" class="menu-item" data-category="Specials">Specials</a>
     </div>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
